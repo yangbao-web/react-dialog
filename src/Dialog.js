@@ -2,13 +2,35 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classname from 'classnames';
+import Animate from 'rc-animate';
 import './Dialog.css';
+
+class AnimateRenderBox extends React.Component {
+  shouldComponentUpdate(nextProps) {
+    return !!nextProps.hiddenClassName || !!nextProps.visible;
+  }
+  render() {
+    let className = this.props.className;
+    if (!!this.props.hiddenClassName && !this.props.visible) {
+      className += ` ${this.props.hiddenClassName}`;
+    }
+    const {...props} = this.props;
+    props.className = className;
+    delete props.visible;
+    delete props.hiddenClassName;
+    return <div {...props} />;
+  }
+}
+AnimateRenderBox.propTypes = {
+  visible: PropTypes.bool
+};
 
 class Dialog extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      show: !!props.show
+      show: !!props.show,
+      animateShow: !!props.show
     }
   }
 
@@ -33,33 +55,59 @@ class Dialog extends Component {
       show: false
     })
   }
+  onAnimateLeave = (animateShow) => {
+    this.setState({
+      [animateShow]: false
+    })
+  }
   componentWillReceiveProps(nextProps) {
     this.setState({
-      show: nextProps.show
+      show: nextProps.show,
+      animateShow: nextProps.show
     })
   }
   render() {
     let t = this;
     let props = t.props;
+    let style = t.state.animateShow ? null : {display: 'none'};
     return (
-      <div style={{display: t.state.show ? 'block' : 'none'}} className="dialog">
-        {
-          props.hasMask ? <div className="dialog-mask"></div> : null
-        }
-        <div className={classname("dialog-wrap", {[props.className]: !!props.className})}>
-          <div className="dialog-container">
-            {
-              props.title ? <div className="dialog-title">{props.title}</div> : null
-            }
-            {
-              props.content ? <div className="dialog-content">{props.content}</div> : null
-            }
-            <div className="dialog-buttons">
-              {
-                t.renderButton(props.buttons)
-              }
-            </div>
-          </div>
+      <div>
+        <Animate
+          component=''
+          showProp="visible"
+          transitionName="mask-fade"
+          transitionAppear={true}
+        >
+          <AnimateRenderBox 
+            className="dialog-mask"
+            hiddenClassName={classname({"dialog-mask-hidden": !t.state.show})}
+            visible={t.state.show}>
+          </AnimateRenderBox>
+        </Animate>
+        <div style={style} className={classname("dialog-wrap", {[props.className]: !!props.className})}>
+          <Animate
+            component=''
+            showProp="visible"
+            transitionName="dialog-slideDown"
+            transitionAppear={true}
+            onLeave={t.onAnimateLeave.bind(t, 'animateShow')}
+          >
+            <AnimateRenderBox className="dialog-container" visible={t.state.show}>
+              <div className="dialog-body">
+                {
+                  props.title ? <div className="dialog-title">{props.title}</div> : null
+                }
+                {
+                  props.content ? <div className="dialog-content">{props.content}</div> : null
+                }
+                <div className="dialog-buttons">
+                  {
+                    t.renderButton(props.buttons)
+                  }
+                </div>
+              </div>
+            </AnimateRenderBox>
+          </Animate>
         </div>
       </div>
     );

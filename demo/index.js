@@ -20,12 +20,22 @@ class Demo extends Component {
   	Dialog.confirm({
   	  title: '标题',
       content: '确认弹框',
+      onConfirm: () => {
+        console.log('确定');
+        return false;
+      },
+      onCancel: () => {
+        console.log('取消')
+      }
   	})
   }
   showAlertDialog(){
   	Dialog.alert({
   	  title: '标题',
       content: '提示弹框',
+      onConfirm: () => {
+        console.log('知道了')
+      }
   	})
   }
   showCustomDialog(){
@@ -34,13 +44,13 @@ class Demo extends Component {
       content: '自定义弹框',
       buttons: [{
   	    content: '按钮一',
-        callback: ()=>{alert('按钮一')}
+        callback: ()=>{console.log('按钮一')}
       }, {
   	    content: '按钮二',
-        callback: ()=>{alert('按钮二')}
+        callback: ()=>{console.log('按钮二')}
       }, {
   	    content: '按钮三',
-        callback: ()=>{alert('按钮三')},
+        callback: ()=>{console.log('按钮三')},
         primary: true
       }],
   	})
